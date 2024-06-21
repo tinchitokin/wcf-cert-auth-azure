@@ -98,9 +98,9 @@ namespace WCFClient
 
         private static void SetClientCertificate(ServiceClient client)
         {
-            //var certificate = GetCertificate(); // Use this method if the certificate is stored in the local machine store
+            var certificate = GetCertificate(); // Use this method if the certificate is stored in the local machine store
 
-            X509Certificate2 certificate = GetCertificateFromKeyVault(certName).Result;
+           // X509Certificate2 certificate = GetCertificateFromKeyVault(certName).Result;
             if (certificate != null)
             {
                 client.ClientCredentials.ClientCertificate.Certificate = certificate;
