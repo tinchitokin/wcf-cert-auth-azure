@@ -16,21 +16,26 @@ namespace WCFClient
         private static string keyVaultUri = ConfigurationManager.AppSettings["KeyVaultUri"];
         private static string certName = ConfigurationManager.AppSettings["CertName"];
         private static string subjectName = ConfigurationManager.AppSettings["SubjectName"];
+        private static string wshttpBinding = "WSHttpBinding_IService";
+        private static string basichttpBinding = "BasicHttpBinding_IService";
 
         public static void Main(string[] args)
         {
-            var client = new ServiceClient("WSHttpBinding_IService");
+            CallWcfService(wshttpBinding);
+            CallWcfService(basichttpBinding);
+        }
 
-            // Set the client certificate
-            SetClientCertificate(client);
+        private static void CallWcfService(string binding)
+        {
+            var client = CreateServiceClient(binding);
 
             try
             {
-                var result = ExecuteWithRetry(() => client.GetTodayRegistrations());
+                var result = client.GetTodayRegistrations();
 
                 Registration[] todayRegistrations = result;
 
-                Console.WriteLine("Today's Registrations:");
+                Console.WriteLine($"Today's Registrations from {binding}.");
                 foreach (var registration in todayRegistrations)
                 {
                     Console.WriteLine($"- {registration.CustomerName}");
@@ -52,67 +57,40 @@ namespace WCFClient
                 }
             }
 
-            Console.Read();
+            Console.ReadLine();
         }
 
-        public static T ExecuteWithRetry<T>(Func<T> operation, int maxRetries = 3)
+        private static ServiceClient CreateServiceClient(string bindingName)
         {
-            int attempt = 0;
-            while (true)
-            {
-                try
-                {
-                    return operation();
-                }
-                catch (Exception ex) when (ex is TimeoutException || ex is CommunicationException)
-                {
-                    attempt++;
-                    if (attempt >= maxRetries)
-                    {
-                        throw; // Rethrow the exception after the last attempt
-                    }
-                    // Optionally, implement a backoff strategy here
-                    Console.WriteLine($"Attempt {attempt} failed, retrying...");
-                }
-            }
+            var client = new ServiceClient(bindingName);
+            SetClientCertificate(client, bindingName);
+            return client;
         }
 
-        private static async Task CallAsyncMethods(ServiceClient client)
+        private static void SetClientCertificate(ServiceClient client, string binding)
         {
-            try
-            {
-                Registration[] todayRegistrationsAsync = await client.GetTodayRegistrationsAsync();
-                Console.WriteLine("Today's Registrations (Async):");
-                foreach (var registration in todayRegistrationsAsync)
-                {
-                    Console.WriteLine($"- {registration.CustomerName}");
-                }
+            X509Certificate2 certificate = null;
 
-                RegistrationDaySummary todaySummaryAsync = await client.GetTodayRegistrationSummaryAsync();
-                Console.WriteLine($"Today's Summary (Async): Check-ins {todaySummaryAsync.CheckIns}, Check-outs {todaySummaryAsync.CheckOuts}");
-            }
-            catch (Exception ex)
+            if (binding.Contains(basichttpBinding))
             {
-                Console.WriteLine($"Error calling async service: {ex.Message}");
-            }
-        }
-
-        private static void SetClientCertificate(ServiceClient client)
-        {
-            var certificate = GetCertificate(); // Use this method if the certificate is stored in the local machine store
-
-           // X509Certificate2 certificate = GetCertificateFromKeyVault(certName).Result;
-            if (certificate != null)
-            {
-                client.ClientCredentials.ClientCertificate.Certificate = certificate;
+                certificate = GetCertificate();  // Use this method if the certificate is stored in the local machine store
             }
             else
+            {
+                certificate = GetCertificateFromKeyVault().Result;
+                if (certificate != null)
+                {
+                    client.ClientCredentials.ClientCertificate.Certificate = certificate;
+                }
+            }
+
+            if (certificate == null)
             {
                 Console.WriteLine("Certificate not found. Please check the certificate details.");
             }
         }
 
-        private static async Task<X509Certificate2> GetCertificateFromKeyVault(string certName)
+        private static async Task<X509Certificate2> GetCertificateFromKeyVault()
         {
             var keyVaultUriBuilder = new UriBuilder(keyVaultUri);
             var keyVaultUrl = keyVaultUriBuilder.Uri;
