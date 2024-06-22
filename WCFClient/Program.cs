@@ -13,30 +13,29 @@ namespace WCFClient
 {
     public class Program
     {
-        private static string keyVaultUri = ConfigurationManager.AppSettings["KeyVaultUri"];
-        private static string certName = ConfigurationManager.AppSettings["CertName"];
-        private static string subjectName = ConfigurationManager.AppSettings["SubjectName"];
-        private static string wshttpBinding = "WSHttpBinding_IService";
-        private static string basichttpBinding = "BasicHttpBinding_IService";
+        static string keyVaultUri = ConfigurationManager.AppSettings["KeyVaultUri"];
+        static string certName = ConfigurationManager.AppSettings["CertName"];
+        static string subjectName = ConfigurationManager.AppSettings["SubjectName"];
+        static string wshttpBinding = "WSHttpBinding_IService";
+        static string basichttpBinding = "BasicHttpBinding_IService";
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            CallWcfService(wshttpBinding);
-            CallWcfService(basichttpBinding);
+            await CallWcfServiceAsync(wshttpBinding);
+            await CallWcfServiceAsync(basichttpBinding);
+            Console.ReadLine();
         }
 
-        private static void CallWcfService(string binding)
+        private static async Task CallWcfServiceAsync(string binding)
         {
-            var client = CreateServiceClient(binding);
+            var client = await CreateServiceClientAsync(binding);
 
             try
             {
-                var result = client.GetTodayRegistrations();
+                var result = await client.GetTodayRegistrationsAsync();
 
-                Registration[] todayRegistrations = result;
-
-                Console.WriteLine($"Today's Registrations from {binding}.");
-                foreach (var registration in todayRegistrations)
+                Console.WriteLine($"Today's Registrations from {binding}:");
+                foreach (var registration in result)
                 {
                     Console.WriteLine($"- {registration.CustomerName}");
                 }
@@ -56,38 +55,40 @@ namespace WCFClient
                     client.Close();
                 }
             }
-
-            Console.ReadLine();
         }
 
-        private static ServiceClient CreateServiceClient(string bindingName)
+        private static async Task<ServiceClient> CreateServiceClientAsync(string bindingName)
         {
             var client = new ServiceClient(bindingName);
-            SetClientCertificate(client, bindingName);
+
+            if (!bindingName.Contains(basichttpBinding))
+            {
+                await SetClientCertificateAsync(client);
+            }
             return client;
         }
 
-        private static void SetClientCertificate(ServiceClient client, string binding)
+        private static async Task SetClientCertificateAsync(ServiceClient client)
         {
-            X509Certificate2 certificate = null;
-
-            if (binding.Contains(basichttpBinding))
+            X509Certificate2 certificate = await GetCertificateAsync();
+            if (certificate != null)
             {
-                certificate = GetCertificate();  // Use this method if the certificate is stored in the local machine store
+                client.ClientCredentials.ClientCertificate.Certificate = certificate;
             }
             else
             {
-                certificate = GetCertificateFromKeyVault().Result;
-                if (certificate != null)
-                {
-                    client.ClientCredentials.ClientCertificate.Certificate = certificate;
-                }
-            }
-
-            if (certificate == null)
-            {
                 Console.WriteLine("Certificate not found. Please check the certificate details.");
             }
+        }
+
+        private static async Task<X509Certificate2> GetCertificateAsync()
+        {
+            // Attempt to retrieve from local store first
+            X509Certificate2 certificate = GetCertificate();
+            if (certificate != null) return certificate;
+
+            // If not found, attempt to retrieve from Key Vault
+            return await GetCertificateFromKeyVault();
         }
 
         private static async Task<X509Certificate2> GetCertificateFromKeyVault()
