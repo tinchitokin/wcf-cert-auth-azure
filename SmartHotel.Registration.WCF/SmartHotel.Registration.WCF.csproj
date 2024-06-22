@@ -144,7 +144,6 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Service.svc" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -164,9 +163,7 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Registration.cs" />
     <Compile Include="Models\RegistrationDaySummary.cs" />
-    <Compile Include="Service.svc.cs">
-      <DependentUpon>Service.svc</DependentUpon>
-    </Compile>
+    <Compile Include="Service.cs" />
     <Compile Include="IService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

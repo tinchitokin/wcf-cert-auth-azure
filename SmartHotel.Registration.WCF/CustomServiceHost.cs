@@ -26,14 +26,14 @@ namespace SmartHotel.Registration.Wcf
 
         private void SetupServiceCertificate()
         {
-            var certificate = RetrieveCertificateFromKeyVaultAsync();
+            var certificate = RetrieveCertificateFromKeyVault();
             if (Description.Behaviors.Find<ServiceCredentials>() is ServiceCredentials credentials)
             {
                 credentials.ServiceCertificate.Certificate = certificate;
             }
         }
 
-        private X509Certificate2 RetrieveCertificateFromKeyVaultAsync()
+        private X509Certificate2 RetrieveCertificateFromKeyVault()
         {
             // Check if the certificate is already cached
             if (_cachedCertificate != null)
