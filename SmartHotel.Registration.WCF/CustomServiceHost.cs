@@ -1,15 +1,18 @@
 ﻿using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using System;
+using System.Configuration;
 using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
 using System.ServiceModel.Description;
-using System.Threading.Tasks;
 
 namespace SmartHotel.Registration.Wcf
 {
     public class CustomServiceHost : ServiceHost
     {
+        private static X509Certificate2 _cachedCertificate = null;
+        private static readonly object _cacheLock = new object();
+
         public CustomServiceHost(Type serviceType, params Uri[] baseAddresses)
             : base(serviceType, baseAddresses)
         {
@@ -23,22 +26,46 @@ namespace SmartHotel.Registration.Wcf
 
         private void SetupServiceCertificate()
         {
-            var certificate = RetrieveCertificateFromKeyVaultAsync().GetAwaiter().GetResult();
-            if (this.Description.Behaviors.Find<ServiceCredentials>() is ServiceCredentials credentials)
+            var certificate = RetrieveCertificateFromKeyVaultAsync();
+            if (Description.Behaviors.Find<ServiceCredentials>() is ServiceCredentials credentials)
             {
                 credentials.ServiceCertificate.Certificate = certificate;
             }
         }
 
-        private async Task<X509Certificate2> RetrieveCertificateFromKeyVaultAsync()
+        private X509Certificate2 RetrieveCertificateFromKeyVaultAsync()
         {
-            var keyVaultUrl = "https://kvmm.vault.azure.net/";
-            var certificateName = "mydomain";
-            var client = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
-            KeyVaultSecret secret = await client.GetSecretAsync(certificateName);
-            var bytes = Convert.FromBase64String(secret.Value);
-            // Specify X509KeyStorageFlags
-            return new X509Certificate2(bytes, (string)null, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
+            // Check if the certificate is already cached
+            if (_cachedCertificate != null)
+            {
+                return _cachedCertificate;
+            }
+
+            lock (_cacheLock)
+            {
+                // Double-check locking
+                if (_cachedCertificate != null)
+                {
+                    return _cachedCertificate;
+                }
+
+                try
+                {
+                    var keyVaultUrl = ConfigurationManager.AppSettings["KeyVaultUrl"];
+                    var certificateName = ConfigurationManager.AppSettings["DomainName"]; ;
+                    var client = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
+                    Console.WriteLine("Retrieving certificate from Azure Key Vault...");
+                    KeyVaultSecret secret = client.GetSecretAsync(certificateName).GetAwaiter().GetResult();
+                    var bytes = Convert.FromBase64String(secret.Value);
+                    _cachedCertificate = new X509Certificate2(bytes, (string)null, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
+                    return _cachedCertificate;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error retrieving certificate: {ex.Message}");
+                    throw; // Rethrow the exception to ensure the caller is aware an error occurred.
+                }
+            }
         }
     }
 }

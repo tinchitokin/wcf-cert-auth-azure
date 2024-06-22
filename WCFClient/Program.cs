@@ -13,8 +13,9 @@ namespace WCFClient
 {
     public class Program
     {
-        private static string keyVaultUri = ConfigurationManager.AppSettings["ida:KeyVaultUri"];
-        private static string certName = ConfigurationManager.AppSettings["ida:CertName"];
+        private static string keyVaultUri = ConfigurationManager.AppSettings["KeyVaultUri"];
+        private static string certName = ConfigurationManager.AppSettings["CertName"];
+        private static string subjectName = ConfigurationManager.AppSettings["SubjectName"];
 
         public static void Main(string[] args)
         {
@@ -152,7 +153,7 @@ namespace WCFClient
         {
             X509Store store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
             store.Open(OpenFlags.ReadOnly);
-            var certificates = store.Certificates.Find(X509FindType.FindBySubjectName, "mydomain.com", false);
+            var certificates = store.Certificates.Find(X509FindType.FindBySubjectName, subjectName, false);
             store.Close();
 
             if (certificates.Count > 0)
