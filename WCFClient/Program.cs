@@ -19,7 +19,21 @@ namespace WCFClient
 
         public static void Main(string[] args)
         {
-            var client = new ServiceClient("WSHttpBinding_IService");
+            CallWcfService("WSHttpBinding_IService");
+            CallWcfService("BasicHttpBinding_IService");
+        }
+
+        private static ServiceClient CreateServiceClient(string bindingName)
+        {
+            var client = new ServiceClient(bindingName);
+            SetClientCertificate(client);
+            return client;
+        }
+
+
+        private static void CallWcfService(string binding)
+        {
+            var client = CreateServiceClient(binding); 
 
             // Set the client certificate
             SetClientCertificate(client);
@@ -30,7 +44,7 @@ namespace WCFClient
 
                 Registration[] todayRegistrations = result;
 
-                Console.WriteLine("Today's Registrations:");
+                Console.WriteLine("Today's Registrations from wshttpBinding with certification authentication:");
                 foreach (var registration in todayRegistrations)
                 {
                     Console.WriteLine($"- {registration.CustomerName}");
@@ -52,7 +66,7 @@ namespace WCFClient
                 }
             }
 
-            Console.Read();
+            Console.ReadLine();
         }
 
         public static T ExecuteWithRetry<T>(Func<T> operation, int maxRetries = 3)
@@ -101,7 +115,7 @@ namespace WCFClient
         {
             var certificate = GetCertificate(); // Use this method if the certificate is stored in the local machine store
 
-           // X509Certificate2 certificate = GetCertificateFromKeyVault(certName).Result;
+            // X509Certificate2 certificate = GetCertificateFromKeyVault(certName).Result;
             if (certificate != null)
             {
                 client.ClientCredentials.ClientCertificate.Certificate = certificate;
