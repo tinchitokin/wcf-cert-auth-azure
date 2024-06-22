@@ -19,6 +19,13 @@ namespace WCFClient
 
         public static void Main(string[] args)
         {
+            UseWshttpBindingToCallWcfService();
+
+            UseBasicHttpBindingToCallWcfService();
+        }
+
+        private static void UseWshttpBindingToCallWcfService()
+        {
             var client = new ServiceClient("WSHttpBinding_IService");
 
             // Set the client certificate
@@ -30,7 +37,7 @@ namespace WCFClient
 
                 Registration[] todayRegistrations = result;
 
-                Console.WriteLine("Today's Registrations:");
+                Console.WriteLine("Today's Registrations from wshttpBinding with certification authentication:");
                 foreach (var registration in todayRegistrations)
                 {
                     Console.WriteLine($"- {registration.CustomerName}");
@@ -52,7 +59,41 @@ namespace WCFClient
                 }
             }
 
-            Console.Read();
+            Console.ReadLine();
+        }
+
+        private static void UseBasicHttpBindingToCallWcfService()
+        {
+            ServiceClient clientBasicHttp = null;
+            try
+            {
+                clientBasicHttp = new ServiceClient("BasicHttpBinding_IService");
+
+                var resultBasic = clientBasicHttp.GetTodayRegistrations();
+
+                Console.WriteLine("Today's Registrations basic http binding:");
+                foreach (var registration in resultBasic)
+                {
+                    Console.WriteLine($"- {registration.CustomerName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error calling service with basic HTTP binding: {ex.Message}");
+            }
+            finally
+            {
+                if (clientBasicHttp.State == CommunicationState.Faulted)
+                {
+                    clientBasicHttp.Abort();
+                }
+                else
+                {
+                    clientBasicHttp.Close();
+                }
+            }
+
+            Console.ReadLine();
         }
 
         public static T ExecuteWithRetry<T>(Func<T> operation, int maxRetries = 3)
@@ -101,7 +142,7 @@ namespace WCFClient
         {
             var certificate = GetCertificate(); // Use this method if the certificate is stored in the local machine store
 
-           // X509Certificate2 certificate = GetCertificateFromKeyVault(certName).Result;
+            // X509Certificate2 certificate = GetCertificateFromKeyVault(certName).Result;
             if (certificate != null)
             {
                 client.ClientCredentials.ClientCertificate.Certificate = certificate;
