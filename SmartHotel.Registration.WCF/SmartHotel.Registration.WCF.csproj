@@ -183,6 +183,7 @@
     <None Include="Properties\PublishProfiles\SmartHotelRegistrationWCF20240621113659 - Web Deploy2.pubxml" />
     <None Include="Properties\PublishProfiles\SmartHotelRegistrationWCF20240621113659 - Web Deploy3.pubxml" />
     <None Include="Properties\PublishProfiles\SmartHotelRegistrationWCF20240621113659 - Web Deploy4.pubxml" />
+    <None Include="Properties\PublishProfiles\SmartHotelRegistrationWCF20240621113659 - Web Deploy5.pubxml" />
     <None Include="Properties\PublishProfiles\SmartHotelRegistrationWCFIgnite - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
