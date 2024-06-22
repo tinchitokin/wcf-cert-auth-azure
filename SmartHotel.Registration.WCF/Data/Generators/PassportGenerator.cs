@@ -4,7 +4,7 @@ namespace SmartHotel.Registration.Wcf.Data.Generators
 {
     public class PassportGenerator
     {
-        private static List<string> _passports = new List<string>
+        private static readonly List<string> _passports = new List<string>
         {
             "002850168",
             "315123188",
@@ -185,7 +185,7 @@ namespace SmartHotel.Registration.Wcf.Data.Generators
             "818357333",
         };
 
-        private Stack<string> _availablePassports = new Stack<string>(_passports);
+        private readonly Stack<string> _availablePassports = new Stack<string>(_passports);
 
         public string GetPassport()
         {

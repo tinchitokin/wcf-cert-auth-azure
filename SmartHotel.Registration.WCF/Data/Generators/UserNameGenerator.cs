@@ -4,7 +4,7 @@ namespace SmartHotel.Registration.Wcf.Data.Generators.Generators
 {
     public class UserNameGenerator
     {
-        private static List<string> _names = new List<string>
+        private static readonly List<string> _names = new List<string>
         {
             "Sophie Stevenson",
             "Louisa Lane",
@@ -296,7 +296,7 @@ namespace SmartHotel.Registration.Wcf.Data.Generators.Generators
             "Isaac Jorba"
         };
 
-        private Stack<string> _availableNames = new Stack<string>(_names);
+        private readonly Stack<string> _availableNames = new Stack<string>(_names);
 
         public string GetName()
         {

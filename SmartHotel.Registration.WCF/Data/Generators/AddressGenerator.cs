@@ -4,7 +4,7 @@ namespace SmartHotel.Registration.Wcf.Data.Generators
 {
     public class AddressGenerator
     {
-        private static List<string> _postCodes = new List<string>
+        private static readonly List<string> _postCodes = new List<string>
         {
             "60014",
             "48047",
@@ -188,9 +188,9 @@ namespace SmartHotel.Registration.Wcf.Data.Generators
             "38017",
         };
 
-        private Stack<string> _availablePostCodes = new Stack<string>(_postCodes);
+        private readonly Stack<string> _availablePostCodes = new Stack<string>(_postCodes);
 
-        private static List<string> _streets = new List<string>
+        private static readonly List<string> _streets = new List<string>
         {
             "1127 Eraad Lane",
             "1720 Fogug Boulevard",
@@ -304,7 +304,7 @@ namespace SmartHotel.Registration.Wcf.Data.Generators
             "501 Ucgaj Turnpike",
         };
 
-        private Stack<string> _availableStreets = new Stack<string>(_streets);
+        private readonly Stack<string> _availableStreets = new Stack<string>(_streets);
 
         public string GetAddress()
         {

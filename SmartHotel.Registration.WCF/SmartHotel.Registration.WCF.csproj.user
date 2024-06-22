@@ -9,7 +9,7 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
-    <NameOfLastUsedPublishProfile>C:\CIBC\wcf-cert-auth-azure\SmartHotel.Registration.WCF\Properties\PublishProfiles\SmartHotelRegistrationWCF20240621113659 - Web Deploy2.pubxml</NameOfLastUsedPublishProfile>
+    <NameOfLastUsedPublishProfile>D:\dev\wcf\SmartHotel.Registration.WCF\Properties\PublishProfiles\SmartHotelRegistrationWCF20240621113659 - Web Deploy5.pubxml</NameOfLastUsedPublishProfile>
     <ProjectView>ProjectFiles</ProjectView>
   </PropertyGroup>
   <ProjectExtensions>
