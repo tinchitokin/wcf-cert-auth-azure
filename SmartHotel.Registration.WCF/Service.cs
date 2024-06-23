@@ -7,7 +7,7 @@ using System.ServiceModel;
 
 namespace SmartHotel.Registration.Wcf
 {
-    [ServiceBehavior(IncludeExceptionDetailInFaults = true)]
+    [ServiceBehavior(IncludeExceptionDetailInFaults = true, InstanceContextMode = InstanceContextMode.PerPession)]
     public class Service : IService
     {
         public IEnumerable<Models.Registration> GetTodayRegistrations()

@@ -42,7 +42,7 @@ namespace WCFClient
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error calling service: {ex.Message}");
+                Console.WriteLine($"Exception calling service: {ex.Message}\n\r Proxy state: {client.State}");
             }
             finally
             {
